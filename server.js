@@ -32,7 +32,9 @@ const dataFilePath = path.join(__dirname, 'data', 'frutas.json');
  * 3. Debe retornar el arreglo de frutas con un status 200.
  */
 app.get('/frutas', (req, res) => {
-  // Tu código aquí
+  let contenido = fs.readFileSync(dataFilePath, 'utf-8');
+  let frutas = JSON.parse(contenido);
+  res.status(200).json(frutas);
 });
 
 /**
@@ -44,7 +46,11 @@ app.get('/frutas', (req, res) => {
  * IMPORTANTE: ¡Esta ruta debe ir ANTES que la ruta GET /frutas/:id!
  */
 app.get('/frutas/buscar', (req, res) => {
-  // Tu código aquí
+  let nombre = req.query.nombre;
+  let contenido = fs.readFileSync(dataFilePath, 'utf-8');
+  let frutas = JSON.parse(contenido);
+  let resultado = frutas.filter(fruta =>fruta.nombre.toLowerCase().includes(nombre.toLowerCase()))
+  res.status(200).json(resultado);
 });
 
 /**
@@ -57,7 +63,15 @@ app.get('/frutas/buscar', (req, res) => {
  * 5. Si no la encuentra, retornar un objeto { error: "Fruta no encontrada" } con status 404.
  */
 app.get('/frutas/:id', (req, res) => {
-  // Tu código aquí
+  let id = Number(req.params.id);
+  let contenido = fs.readFileSync(dataFilePath, 'utf-8');
+  let frutas = JSON.parse(contenido);
+  let fruta = frutas.find(f => f.id === id);
+  if (fruta) {
+    res.status(200).json(fruta);
+  } else {
+    res.status(404).json({error: 'Fruta no encontrada'})
+  }
 });
 
 /**
@@ -71,6 +85,19 @@ app.get('/frutas/:id', (req, res) => {
  */
 app.post('/frutas', (req, res) => {
   // Tu código aquí
+  let contenido = fs.readFileSync(dataFilePath, 'utf-8');
+  let frutas = JSON.parse(contenido);
+  let idMaximo = frutas[frutas.length - 1].id;
+  let nuevaFruta = {
+    id: idMaximo + 1,
+    imagen: req.body.imagen,
+    nombre: req.body.nombre,
+    importe: req.body.importe,
+    stock: req.body.stock
+  };
+  frutas.push(nuevaFruta);
+  fs.writeFileSync(dataFilePath, JSON.stringify(frutas, null, 2));
+  res.status(201).json(nuevaFruta);
 });
 
 // Iniciar el servidor
